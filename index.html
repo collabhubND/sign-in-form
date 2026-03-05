@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SBEAP Collaboration Hub Sign-In</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@700;900&family=Open+Sans:wght@400;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background-color: #9AB8D5;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .header {
+    width: 100%; background-color: #0C2340;
+    padding: 18px 30px;
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+  }
+  .header .nd-logo {
+    width: 52px; height: 52px; background: #C99700; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Merriweather', serif; font-weight: 900; font-size: 20px; color: #0C2340;
+    flex-shrink: 0;
+  }
+  .header-text { color: #FFFFFF; line-height: 1.3; }
+  .header-text .title-main {
+    font-family: 'Merriweather', serif; font-weight: 700; font-size: 18px;
+    letter-spacing: 2px; text-transform: uppercase;
+  }
+  .header-text .title-sub {
+    font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.85;
+  }
+  .accent-line {
+    width: 100%; height: 5px;
+    background: linear-gradient(90deg, #C99700, #E8A900, #C99700);
+  }
+  .form-container {
+    width: 100%; max-width: 720px; margin: 30px auto 40px; padding: 0 20px;
+  }
+  .form-card {
+    background-color: #CADCEB; border-radius: 8px;
+    padding: 36px 40px 40px; box-shadow: 0 2px 12px rgba(12,35,64,0.15);
+  }
+  .form-title {
+    font-family: 'Merriweather', serif; font-weight: 900; font-size: 26px;
+    color: #0C2340; text-align: center; margin-bottom: 8px;
+  }
+  .form-divider { height: 2px; background: #9AB8D5; margin: 16px 0 28px; }
+  .field-group { margin-bottom: 22px; }
+  .field-label {
+    font-weight: 700; font-size: 15px; color: #0C2340; margin-bottom: 8px; display: block;
+  }
+  .field-hint { font-size: 13px; color: #1A5091; font-style: italic; margin-top: 4px; }
+  input[type="text"], input[type="date"], select, textarea {
+    width: 100%; max-width: 360px; padding: 10px 14px;
+    font-family: 'Open Sans', sans-serif; font-size: 14px; color: #0C2340;
+    background: #FFFFFF; border: 1.5px solid #7BA3C7; border-radius: 4px;
+    outline: none; transition: border-color 0.2s;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: #0C2340; box-shadow: 0 0 0 2px rgba(12,35,64,0.12);
+  }
+  select { cursor: pointer; appearance: auto; }
+  textarea { max-width: 100%; min-height: 70px; resize: vertical; }
+  .name-row { display: flex; gap: 16px; }
+  .name-row .name-col { flex: 1; }
+  .name-row input { max-width: 100%; width: 100%; }
+  .name-row .sub-label { font-size: 12px; color: #1A5091; margin-top: 4px; font-weight: 600; }
+  .radio-group { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .radio-option {
+    display: flex; align-items: center; gap: 10px;
+    cursor: pointer; font-size: 14px; color: #0C2340;
+  }
+  .radio-option input[type="radio"] {
+    width: 18px; height: 18px; accent-color: #0C2340; cursor: pointer; flex-shrink: 0;
+  }
+  .footer-logo { text-align: center; margin-top: 28px; padding-top: 20px; border-top: 2px solid #9AB8D5; }
+  .footer-logo .fl-box { display: inline-flex; align-items: center; gap: 12px; }
+  .footer-logo .fl-icon {
+    width: 44px; height: 44px; background: #0C2340; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Merriweather', serif; font-weight: 900; font-size: 16px; color: #C99700;
+  }
+  .footer-logo .fl-text { text-align: left; line-height: 1.25; }
+  .footer-logo .fl-text .ft-main {
+    font-family: 'Merriweather', serif; font-weight: 700; font-size: 13px;
+    color: #0C2340; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .footer-logo .fl-text .ft-line { height: 1.5px; background: #0C2340; margin: 3px 0; }
+  .footer-logo .fl-text .ft-sub {
+    font-size: 10px; color: #0C2340; letter-spacing: 1px; text-transform: uppercase;
+  }
+  .submit-area { text-align: center; margin-top: 28px; padding-top: 20px; border-top: 2px solid #9AB8D5; }
+  .btn-submit {
+    background-color: #0C2340; color: #FFFFFF;
+    font-family: 'Merriweather', serif; font-weight: 700;
+    font-size: 16px; letter-spacing: 1px; padding: 14px 60px;
+    border: none; border-radius: 4px; cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+  }
+  .btn-submit:hover { background-color: #163a63; }
+  .btn-submit:active { transform: scale(0.98); }
+  .success-screen { display: none; text-align: center; }
+  .success-screen.active { display: block; }
+  .form-screen.hidden { display: none; }
+  .print-slip {
+    background: #FFFFFF; border: 2px solid #0C2340; border-radius: 8px;
+    padding: 30px 36px; text-align: left; margin: 20px 0;
+  }
+  .print-slip h2 {
+    font-family: 'Merriweather', serif; font-size: 20px;
+    color: #0C2340; text-align: center; margin-bottom: 4px;
+  }
+  .print-slip .slip-subtitle { text-align: center; font-size: 12px; color: #666; margin-bottom: 18px; }
+  .print-slip .slip-row {
+    display: flex; padding: 8px 0; border-bottom: 1px solid #E8E8E8; font-size: 14px;
+  }
+  .print-slip .slip-row:last-child { border-bottom: none; }
+  .print-slip .slip-label { width: 200px; font-weight: 700; color: #0C2340; flex-shrink: 0; }
+  .print-slip .slip-value { color: #333; flex: 1; }
+  .print-slip .slip-footer {
+    margin-top: 16px; padding-top: 12px; border-top: 2px solid #0C2340;
+    text-align: center; font-size: 11px; color: #888;
+  }
+  .btn-print {
+    background-color: #1A7A2E; color: #FFFFFF;
+    font-family: 'Merriweather', serif; font-weight: 700;
+    font-size: 18px; letter-spacing: 1px; padding: 16px 70px;
+    border: none; border-radius: 4px; cursor: pointer; margin: 16px 8px;
+    transition: background-color 0.2s;
+  }
+  .btn-print:hover { background-color: #15612A; }
+  .btn-new {
+    background-color: #0C2340; color: #FFFFFF;
+    font-family: 'Open Sans', sans-serif; font-weight: 600;
+    font-size: 14px; padding: 12px 40px; border: none; border-radius: 4px;
+    cursor: pointer; margin: 8px; transition: background-color 0.2s;
+  }
+  .btn-new:hover { background-color: #163a63; }
+  .auto-reset-notice { font-size: 13px; color: #666; margin-top: 16px; }
+  .auto-reset-notice strong { color: #0C2340; }
+  .saving-notice {
+    font-size: 13px; color: #1A7A2E; margin-top: 10px; font-weight: 600;
+  }
+  @media print {
+    body { background: #FFFFFF; }
+    .header, .accent-line, .form-screen, .btn-print, .btn-new,
+    .auto-reset-notice, .success-header, .footer-logo, .saving-notice { display: none !important; }
+    .form-container { margin: 0; padding: 0; max-width: 100%; }
+    .form-card { background: #FFFFFF; box-shadow: none; padding: 10px 0; }
+    .print-slip { border: 2px solid #000; margin: 0; page-break-inside: avoid; }
+    .print-slip h2 { color: #000; }
+    .print-slip .slip-label { color: #000; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="nd-logo">ND</div>
+  <div class="header-text">
+    <div class="title-main">SBEAP Collaboration Hub</div>
+    <div class="title-sub">Keough School of Global Affairs</div>
+  </div>
+</div>
+<div class="accent-line"></div>
+
+<div class="form-container">
+  <div class="form-card">
+
+    <div class="form-screen" id="formScreen">
+      <h1 class="form-title">SBEAP Collaboration Hub Sign-In</h1>
+      <div class="form-divider"></div>
+
+      <form id="signInForm" onsubmit="handleSubmit(event)">
+        <div class="field-group">
+          <label class="field-label" for="cohortYear">SBEAP Cohort Year</label>
+          <select id="cohortYear" required>
+            <option value="" disabled selected>Please Select</option>
+            <option>2018</option><option>2019</option><option>2020</option>
+            <option>2021</option><option>2022</option><option>2023</option>
+            <option>2024</option><option>2025</option><option>2026</option>
+          </select>
+          <div class="field-hint">If unsure, refer to student at front desk</div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="visitDate">Date</label>
+          <input type="date" id="visitDate" required>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Full Name</label>
+          <div class="name-row">
+            <div class="name-col">
+              <input type="text" id="firstName" required>
+              <div class="sub-label">First Name</div>
+            </div>
+            <div class="name-col">
+              <input type="text" id="lastName" required>
+              <div class="sub-label">Last Name</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Please select one</label>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="visitType" value="Walk-in" required> Walk-in</label>
+            <label class="radio-option"><input type="radio" name="visitType" value="Appointment"> Appointment</label>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="consultantSelect">Please select the name of the Student Consultant you're working with</label>
+          <select id="consultantSelect">
+            <option value="" disabled selected>Please Select</option>
+            <option>Alex Styczynski</option>
+            <option>Alex Yu</option>
+            <option>Angie Regalado</option>
+            <option>Anne Kelly</option>
+            <option>Anne Scheidt</option>
+            <option>Annie Shedlock</option>
+            <option>Antonio Musilli</option>
+            <option>Carmen Margarita Castañeda</option>
+            <option>Connor Pietsch</option>
+            <option>Connor Rezner</option>
+            <option>Connor Smith</option>
+            <option>Darcy Keenan-Mills</option>
+            <option>Egan McInerney</option>
+            <option>Gabriella Simeone</option>
+            <option>Gabrielle Salles</option>
+            <option>Grace Kloster</option>
+            <option>Greta Prieto</option>
+            <option>Hannah Lee</option>
+            <option>Jack Regan</option>
+            <option>John McCarthy</option>
+            <option>Jordan Marshall</option>
+            <option>Josue Rodriguez</option>
+            <option>Justin Hur</option>
+            <option>Kalena Yee</option>
+            <option>Karoline Klebba</option>
+            <option>Lauren Engates</option>
+            <option>Lukas Jesso</option>
+            <option>Mariana Hernandez</option>
+            <option>Martha Velasco</option>
+            <option>May The</option>
+            <option>Noah Lancz</option>
+            <option>Rowan Miller</option>
+            <option>Samantha Krahl</option>
+            <option>Shaun McKenna</option>
+            <option>Sophie Ramos</option>
+            <option>Sydney Park</option>
+            <option>Ted Cahill</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+
+
+        <div class="field-group">
+          <label class="field-label">Which stage is your business currently in?</label>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="bizStage" value="Planning" required> Planning: those preparing to launch and have not made sales yet</label>
+            <label class="radio-option"><input type="radio" name="bizStage" value="Launch"> Launch: those that have made one-off sales but not consistently</label>
+            <label class="radio-option"><input type="radio" name="bizStage" value="Stabilization"> Stabilization: those making regular monthly sales with steady customers</label>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Have you been to the Collaboration Hub before?</label>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="beenBefore" value="Yes" required> Yes</label>
+            <label class="radio-option"><input type="radio" name="beenBefore" value="No"> No</label>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="helpArea">Principle area you need help with</label>
+          <select id="helpArea">
+            <option value="" disabled selected>Please Select</option>
+            <option>Accounting</option>
+            <option>Artificial Intelligence (AI)</option>
+            <option>Business Plan</option>
+            <option>Business cards</option>
+            <option>Canva</option>
+            <option>Distribution</option>
+            <option>Excel</option>
+            <option>Finances</option>
+            <option>Flyers - visibility</option>
+            <option>Marketing</option>
+            <option>Operations</option>
+            <option>Photography (Headshots/products)</option>
+            <option>Pricing</option>
+            <option>Printing</option>
+            <option>Research</option>
+            <option>Sales</option>
+            <option>Social Media</option>
+            <option>Website</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="otherProblems">Any other problems you are facing?</label>
+          <textarea id="otherProblems" rows="3"></textarea>
+        </div>
+
+        <div class="footer-logo">
+          <div class="fl-box">
+            <div class="fl-icon">ND</div>
+            <div class="fl-text">
+              <div class="ft-main">SBEAP Collaboration Hub</div>
+              <div class="ft-line"></div>
+              <div class="ft-sub">Keough School of Global Affairs</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="submit-area">
+          <button type="submit" class="btn-submit">Submit</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="success-screen" id="successScreen">
+      <div class="success-header">
+        <h1 class="form-title" style="color: #1A7A2E;">&#10003; Sign-In Complete</h1>
+        <p style="color: #0C2340; margin-top: 8px; font-size: 15px;">
+          Please print the sign-in slip below and deliver it to the assigned consultant.
+        </p>
+      </div>
+      <div class="print-slip" id="printSlip">
+        <h2>SBEAP Collaboration Hub &mdash; Sign-In Slip</h2>
+        <div class="slip-subtitle" id="slipTimestamp"></div>
+        <div id="slipContent"></div>
+        <div class="slip-footer">
+          SBEAP Collaboration Hub &bull; Keough School of Global Affairs &bull; University of Notre Dame
+        </div>
+      </div>
+      <button class="btn-print" onclick="window.print()">&#128424; Print Sign-In Slip</button>
+      <button class="btn-new" onclick="resetForm()">&#8634; New Sign-In</button>
+      <div class="saving-notice" id="savingNotice"></div>
+      <div class="auto-reset-notice">
+        This screen will automatically reset in <strong id="countdown">60</strong> seconds.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var today = new Date();
+    var yyyy = today.getFullYear();
+    var mm = String(today.getMonth() + 1).padStart(2, '0');
+    var dd = String(today.getDate()).padStart(2, '0');
+    document.getElementById('visitDate').value = yyyy + '-' + mm + '-' + dd;
+  });
+
+  var countdownInterval = null;
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    var data = {
+      'SBEAP Cohort Year': document.getElementById('cohortYear').value,
+      'Date': document.getElementById('visitDate').value,
+      'First Name': document.getElementById('firstName').value,
+      'Last Name': document.getElementById('lastName').value,
+      'Visit Type': (document.querySelector('input[name="visitType"]:checked') || {}).value || '',
+      'Consultant Dropdown': document.getElementById('consultantSelect').value || '',
+      'Consultant Entered': '',
+      'Business Stage': (document.querySelector('input[name="bizStage"]:checked') || {}).value || '',
+      'Been Before': (document.querySelector('input[name="beenBefore"]:checked') || {}).value || '',
+      'Help Area': document.getElementById('helpArea').value || '',
+      'Other Problems': document.getElementById('otherProblems').value || 'None'
+    };
+
+    var consultant = data['Consultant Entered'] && data['Consultant Entered'].trim() !== ''
+      ? data['Consultant Entered']
+      : (data['Consultant Dropdown'] || 'N/A');
+
+    var slipFields = [
+      ['Name', data['First Name'] + ' ' + data['Last Name']],
+      ['SBEAP Cohort Year', data['SBEAP Cohort Year']],
+      ['Date', data['Date']],
+      ['Visit Type', data['Visit Type']],
+      ['Student Consultant', consultant],
+      ['Business Stage', data['Business Stage']],
+      ['First Visit?', data['Been Before'] === 'No' ? 'Yes - First Visit' : 'Returning'],
+      ['Help Area', data['Help Area'] || 'N/A'],
+      ['Other Problems', data['Other Problems']]
+    ];
+
+    var html = '';
+    for (var i = 0; i < slipFields.length; i++) {
+      html += '<div class="slip-row"><div class="slip-label">' + slipFields[i][0] +
+        '</div><div class="slip-value">' + slipFields[i][1] + '</div></div>';
+    }
+
+    document.getElementById('slipContent').innerHTML = html;
+    document.getElementById('slipTimestamp').textContent =
+      'Submitted: ' + new Date().toLocaleString('en-US', {
+        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+        hour: 'numeric', minute: '2-digit', hour12: true
+      });
+
+    document.getElementById('formScreen').classList.add('hidden');
+    document.getElementById('successScreen').classList.add('active');
+
+    var seconds = 60;
+    document.getElementById('countdown').textContent = seconds;
+    countdownInterval = setInterval(function() {
+      seconds--;
+      document.getElementById('countdown').textContent = seconds;
+      if (seconds <= 0) { resetForm(); }
+    }, 1000);
+
+    // Send data to Google Sheets
+    sendToGoogleSheet(data);
+  }
+
+  function resetForm() {
+    clearInterval(countdownInterval);
+    document.getElementById('signInForm').reset();
+    var today = new Date();
+    var yyyy = today.getFullYear();
+    var mm = String(today.getMonth() + 1).padStart(2, '0');
+    var dd = String(today.getDate()).padStart(2, '0');
+    document.getElementById('visitDate').value = yyyy + '-' + mm + '-' + dd;
+    document.getElementById('formScreen').classList.remove('hidden');
+    document.getElementById('successScreen').classList.remove('active');
+    document.getElementById('savingNotice').textContent = '';
+    window.scrollTo(0, 0);
+  }
+
+  function sendToGoogleSheet(data) {
+    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxbUxcWTce3TWB2l4DnxfJ8wGK3OfpfzSZVXs0FqewxYzQJ99sO3l95EMRak0UQuwx/exec';
+    document.getElementById('savingNotice').textContent = 'Saving to Google Sheets...';
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(function() {
+      document.getElementById('savingNotice').textContent = 'Saved to Google Sheets';
+    }).catch(function(err) {
+      document.getElementById('savingNotice').textContent = 'Note: Could not save to Google Sheets. Please check internet connection.';
+      console.error('Google Sheets error:', err);
+    });
+  }
+</script>
+</body>
+</html>
