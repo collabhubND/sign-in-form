@@ -353,17 +353,43 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    // Set today's date by default
     var today = new Date();
     var yyyy = today.getFullYear();
     var mm = String(today.getMonth() + 1).padStart(2, '0');
     var dd = String(today.getDate()).padStart(2, '0');
     document.getElementById('visitDate').value = yyyy + '-' + mm + '-' + dd;
+
+    // Add event listeners to the radio buttons
+    const walkInRadio = document.querySelector('input[name="visitType"][value="Walk-in"]');
+    const appointmentRadio = document.querySelector('input[name="visitType"][value="Appointment"]');
+    const consultantSelect = document.getElementById('consultantSelect');
+
+    function toggleConsultantField() {
+      if (appointmentRadio.checked) {
+        consultantSelect.disabled = false;     // Enable for Appointment
+        consultantSelect.style.backgroundColor = "#FFFFFF";
+        consultantSelect.style.cursor = "pointer";
+      } else {
+        consultantSelect.disabled = true;      // Disable for Walk-in
+        consultantSelect.style.backgroundColor = "#f0f0f0";
+        consultantSelect.style.cursor = "not-allowed";
+      }
+    }
+
+    // Listen to changes on both radio buttons
+    walkInRadio.addEventListener('change', toggleConsultantField);
+    appointmentRadio.addEventListener('change', toggleConsultantField);
+
+    // Initial state: Walk-in is not selected by default, so start disabled
+    toggleConsultantField();
   });
 
   var countdownInterval = null;
 
   function handleSubmit(e) {
     e.preventDefault();
+
     var data = {
       'SBEAP Cohort Year': document.getElementById('cohortYear').value,
       'Date': document.getElementById('visitDate').value,
@@ -418,21 +444,40 @@
       if (seconds <= 0) { resetForm(); }
     }, 1000);
 
-    // Send data to Google Sheets
     sendToGoogleSheet(data);
   }
 
   function resetForm() {
     clearInterval(countdownInterval);
     document.getElementById('signInForm').reset();
+
+    // Reset date
     var today = new Date();
     var yyyy = today.getFullYear();
     var mm = String(today.getMonth() + 1).padStart(2, '0');
     var dd = String(today.getDate()).padStart(2, '0');
     document.getElementById('visitDate').value = yyyy + '-' + mm + '-' + dd;
+
     document.getElementById('formScreen').classList.remove('hidden');
     document.getElementById('successScreen').classList.remove('active');
     document.getElementById('savingNotice').textContent = '';
+
+    // Re-apply the consultant field logic after reset
+    const toggleConsultantField = () => {
+      const appointmentRadio = document.querySelector('input[name="visitType"][value="Appointment"]');
+      const consultantSelect = document.getElementById('consultantSelect');
+      if (appointmentRadio.checked) {
+        consultantSelect.disabled = false;
+        consultantSelect.style.backgroundColor = "#FFFFFF";
+        consultantSelect.style.cursor = "pointer";
+      } else {
+        consultantSelect.disabled = true;
+        consultantSelect.style.backgroundColor = "#f0f0f0";
+        consultantSelect.style.cursor = "not-allowed";
+      }
+    };
+    toggleConsultantField();
+
     window.scrollTo(0, 0);
   }
 
