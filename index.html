@@ -241,9 +241,19 @@
 
   function showError(msg){
     var box = $("formError");
-    box.textContent = msg;
+    // Unhide BEFORE writing the text. A hidden role="alert" is not in the
+    // accessibility tree, so text set while hidden produces no mutation for a
+    // screen reader to announce, and revealing it afterwards is routinely
+    // missed. Revealing first, then writing on the next frame, means the
+    // mutation happens inside a live region that is already present. On a form
+    // where the failure message is "your visit was not recorded", silence here
+    // is the whole bug.
+    box.textContent = "";
     box.hidden = false;
-    box.scrollIntoView({block:"nearest"});
+    requestAnimationFrame(function(){
+      box.textContent = msg;
+      box.scrollIntoView({block:"nearest"});
+    });
   }
   function clearError(){ $("formError").hidden = true; $("formError").textContent = ""; }
 
