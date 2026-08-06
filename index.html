@@ -1,222 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SBEAP Collaboration Hub Sign-In</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Collaboration Hub Sign-In</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@700;900&family=Open+Sans:wght@400;600;700&display=swap');
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: 'Open Sans', sans-serif;
-    background-color: #9AB8D5;
-    min-height: 100vh;
-    display: flex; flex-direction: column; align-items: center;
+  :root{
+    --nd-navy:#0c2340; --nd-gold:#ae9142; --ink:#16202e; --muted:#5b6675;
+    --line:#d9dee5; --bg:#f4f6f9; --card:#fff; --ok:#1c6b4a; --err:#a3271f;
+    --focus:#1a6be0; --radius:12px; --tap:52px;
   }
-  .header {
-    width: 100%; background-color: #0C2340;
-    padding: 18px 30px;
-    display: flex; align-items: center; justify-content: center; gap: 16px;
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
-  .header .nd-logo {
-    width: 52px; height: 52px; background: #C99700; border-radius: 4px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Merriweather', serif; font-weight: 900; font-size: 20px; color: #0C2340;
-    flex-shrink: 0;
+  .wrap{max-width:34rem;margin:0 auto;padding:1rem 1rem 3rem}
+  header{padding:1.25rem 0 .75rem}
+  h1{font-size:1.35rem;line-height:1.25;margin:0 0 .25rem;color:var(--nd-navy);text-wrap:balance}
+  .sub{color:var(--muted);font-size:.95rem;margin:0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:1rem;margin-bottom:1rem}
+  label{display:block;font-weight:600;margin:0 0 .35rem;font-size:.98rem}
+  .hint{font-weight:400;color:var(--muted);font-size:.85rem;display:block;margin-top:.15rem}
+  input,select,textarea{
+    width:100%;min-height:var(--tap);padding:.7rem .8rem;font-size:1rem;font-family:inherit;
+    border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);
   }
-  .header-text { color: #FFFFFF; line-height: 1.3; }
-  .header-text .title-main {
-    font-family: 'Merriweather', serif; font-weight: 700; font-size: 18px;
-    letter-spacing: 2px; text-transform: uppercase;
+  textarea{min-height:5.5rem;resize:vertical}
+  input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,[tabindex]:focus-visible{
+    outline:3px solid var(--focus);outline-offset:2px
   }
-  .header-text .title-sub {
-    font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.85;
+  .field{margin-bottom:1rem}
+  .field:last-child{margin-bottom:0}
+  button{
+    min-height:var(--tap);font-size:1rem;font-family:inherit;font-weight:600;
+    border-radius:10px;border:1px solid transparent;cursor:pointer;padding:.7rem 1rem;
   }
-  .accent-line {
-    width: 100%; height: 5px;
-    background: linear-gradient(90deg, #C99700, #E8A900, #C99700);
+  .primary{background:var(--nd-navy);color:#fff;width:100%}
+  .primary[disabled]{background:#7a8699;cursor:not-allowed}
+  .secondary{background:#fff;color:var(--nd-navy);border-color:var(--line);width:100%}
+  .results{list-style:none;margin:.6rem 0 0;padding:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .results li+li{border-top:1px solid var(--line)}
+  .results button{
+    width:100%;text-align:left;background:#fff;border:0;border-radius:0;padding:.8rem;font-weight:600;
   }
-  .form-container {
-    width: 100%; max-width: 720px; margin: 30px auto 40px; padding: 0 20px;
-  }
-  .form-card {
-    background-color: #CADCEB; border-radius: 8px;
-    padding: 36px 40px 40px; box-shadow: 0 2px 12px rgba(12,35,64,0.15);
-  }
-  .form-title {
-    font-family: 'Merriweather', serif; font-weight: 900; font-size: 26px;
-    color: #0C2340; text-align: center; margin-bottom: 8px;
-  }
-  .form-divider { height: 2px; background: #9AB8D5; margin: 16px 0 28px; }
-  .field-group { margin-bottom: 22px; }
-  .field-label {
-    font-weight: 700; font-size: 15px; color: #0C2340; margin-bottom: 8px; display: block;
-  }
-  .field-hint { font-size: 13px; color: #1A5091; font-style: italic; margin-top: 4px; }
-  input[type="text"], input[type="date"], select, textarea {
-    width: 100%; max-width: 360px; padding: 10px 14px;
-    font-family: 'Open Sans', sans-serif; font-size: 14px; color: #0C2340;
-    background: #FFFFFF; border: 1.5px solid #7BA3C7; border-radius: 4px;
-    outline: none; transition: border-color 0.2s;
-  }
-  input:focus, select:focus, textarea:focus {
-    border-color: #0C2340; box-shadow: 0 0 0 2px rgba(12,35,64,0.12);
-  }
-  select { cursor: pointer; appearance: auto; }
-  textarea { max-width: 100%; min-height: 70px; resize: vertical; }
-  .name-row { display: flex; gap: 16px; }
-  .name-row .name-col { flex: 1; }
-  .name-row input { max-width: 100%; width: 100%; }
-  .name-row .sub-label { font-size: 12px; color: #1A5091; margin-top: 4px; font-weight: 600; }
-  .radio-group { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
-  .radio-option {
-    display: flex; align-items: center; gap: 10px;
-    cursor: pointer; font-size: 14px; color: #0C2340;
-  }
-  .radio-option input[type="radio"] {
-    width: 18px; height: 18px; accent-color: #0C2340; cursor: pointer; flex-shrink: 0;
-  }
-  .footer-logo { text-align: center; margin-top: 28px; padding-top: 20px; border-top: 2px solid #9AB8D5; }
-  .footer-logo .fl-box { display: inline-flex; align-items: center; gap: 12px; }
-  .footer-logo .fl-icon {
-    width: 44px; height: 44px; background: #0C2340; border-radius: 4px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Merriweather', serif; font-weight: 900; font-size: 16px; color: #C99700;
-  }
-  .footer-logo .fl-text { text-align: left; line-height: 1.25; }
-  .footer-logo .fl-text .ft-main {
-    font-family: 'Merriweather', serif; font-weight: 700; font-size: 13px;
-    color: #0C2340; letter-spacing: 1px; text-transform: uppercase;
-  }
-  .footer-logo .fl-text .ft-line { height: 1.5px; background: #0C2340; margin: 3px 0; }
-  .footer-logo .fl-text .ft-sub {
-    font-size: 10px; color: #0C2340; letter-spacing: 1px; text-transform: uppercase;
-  }
-  .submit-area { text-align: center; margin-top: 28px; padding-top: 20px; border-top: 2px solid #9AB8D5; }
-  .btn-submit {
-    background-color: #0C2340; color: #FFFFFF;
-    font-family: 'Merriweather', serif; font-weight: 700;
-    font-size: 16px; letter-spacing: 1px; padding: 14px 60px;
-    border: none; border-radius: 4px; cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
-  }
-  .btn-submit:hover { background-color: #163a63; }
-  .btn-submit:active { transform: scale(0.98); }
-  .success-screen { display: none; text-align: center; }
-  .success-screen.active { display: block; }
-  .form-screen.hidden { display: none; }
-  .print-slip {
-    background: #FFFFFF; border: 2px solid #0C2340; border-radius: 8px;
-    padding: 30px 36px; text-align: left; margin: 20px 0;
-  }
-  .print-slip h2 {
-    font-family: 'Merriweather', serif; font-size: 20px;
-    color: #0C2340; text-align: center; margin-bottom: 4px;
-  }
-  .print-slip .slip-subtitle { text-align: center; font-size: 12px; color: #666; margin-bottom: 18px; }
-  .print-slip .slip-row {
-    display: flex; padding: 8px 0; border-bottom: 1px solid #E8E8E8; font-size: 14px;
-  }
-  .print-slip .slip-row:last-child { border-bottom: none; }
-  .print-slip .slip-label { width: 200px; font-weight: 700; color: #0C2340; flex-shrink: 0; }
-  .print-slip .slip-value { color: #333; flex: 1; }
-  .print-slip .slip-footer {
-    margin-top: 16px; padding-top: 12px; border-top: 2px solid #0C2340;
-    text-align: center; font-size: 11px; color: #888;
-  }
-  .btn-print {
-    background-color: #1A7A2E; color: #FFFFFF;
-    font-family: 'Merriweather', serif; font-weight: 700;
-    font-size: 18px; letter-spacing: 1px; padding: 16px 70px;
-    border: none; border-radius: 4px; cursor: pointer; margin: 16px 8px;
-    transition: background-color 0.2s;
-  }
-  .btn-print:hover { background-color: #15612A; }
-  .btn-new {
-    background-color: #0C2340; color: #FFFFFF;
-    font-family: 'Open Sans', sans-serif; font-weight: 600;
-    font-size: 14px; padding: 12px 40px; border: none; border-radius: 4px;
-    cursor: pointer; margin: 8px; transition: background-color 0.2s;
-  }
-  .btn-new:hover { background-color: #163a63; }
-  .auto-reset-notice { font-size: 13px; color: #666; margin-top: 16px; }
-  .auto-reset-notice strong { color: #0C2340; }
-  .saving-notice {
-    font-size: 13px; color: #1A7A2E; margin-top: 10px; font-weight: 600;
-  }
-  @media print {
-    body { background: #FFFFFF; }
-    .header, .accent-line, .form-screen, .btn-print, .btn-new,
-    .auto-reset-notice, .success-header, .footer-logo, .saving-notice { display: none !important; }
-    .form-container { margin: 0; padding: 0; max-width: 100%; }
-    .form-card { background: #FFFFFF; box-shadow: none; padding: 10px 0; }
-    .print-slip { border: 2px solid #000; margin: 0; page-break-inside: avoid; }
-    .print-slip h2 { color: #000; }
-    .print-slip .slip-label { color: #000; }
+  .results button:hover{background:#eef2f7}
+  .results .biz{display:block;font-weight:400;color:var(--muted);font-size:.9rem;margin-top:.1rem}
+  .chosen{display:flex;gap:.75rem;align-items:flex-start;background:#eef4ee;border:1px solid #cfe0d2;border-radius:10px;padding:.8rem}
+  .chosen strong{display:block}
+  .chosen .biz{color:var(--muted);font-size:.9rem}
+  .chosen button{background:none;border:0;color:var(--focus);text-decoration:underline;padding:.25rem;min-height:auto;font-size:.9rem}
+  .msg{border-radius:10px;padding:.8rem;margin:0 0 1rem;font-size:.95rem}
+  .msg.err{background:#fdecea;border:1px solid #f0c2bd;color:var(--err)}
+  .msg.info{background:#eef2f7;border:1px solid var(--line);color:var(--muted)}
+  .status{font-size:1.05rem;font-weight:600;color:var(--ok);margin:0 0 .5rem}
+  .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .searching{color:var(--muted);font-size:.9rem;margin:.5rem 0 0}
+  hr{border:0;border-top:1px solid var(--line);margin:1.25rem 0}
+  @media (prefers-reduced-motion:no-preference){.card{transition:opacity .15s ease}}
+  @media print{
+    body{background:#fff}
+    .noprint{display:none !important}
+    .wrap{max-width:none}
   }
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<div class="header">
-  <div class="nd-logo">ND</div>
-  <div class="header-text">
-    <div class="title-main">SBEAP Collaboration Hub</div>
-    <div class="title-sub">Keough School of Global Affairs</div>
-  </div>
-</div>
-<div class="accent-line"></div>
+  <header>
+    <h1>Collaboration Hub Sign-In</h1>
+    <p class="sub">Recording your visit to the Collaboration Hub.</p>
+  </header>
 
-<div class="form-container">
-  <div class="form-card">
+  <!-- ============================ FORM ============================ -->
+  <main id="formScreen">
+    <div id="formError" class="msg err" role="alert" hidden></div>
 
-    <div class="form-screen" id="formScreen">
-      <h1 class="form-title">SBEAP Collaboration Hub Sign-In</h1>
-      <div class="form-divider"></div>
+    <form id="signInForm" novalidate>
 
-      <form id="signInForm" onsubmit="handleSubmit(event)">
-        <div class="field-group">
-          <label class="field-label" for="cohortYear">SBEAP Cohort Year</label>
-          <select id="cohortYear" required>
-            <option value="" disabled selected>Please Select</option>
-            <option>2018</option><option>2019</option><option>2020</option>
-            <option>2021</option><option>2022</option><option>2023</option>
-            <option>2024</option><option>2025</option><option>2026</option>
+      <section class="card">
+        <div class="field">
+          <label for="nameQuery">Who is signing in?
+            <span class="hint">Type at least 3 letters of the entrepreneur's name, then choose from the list.</span>
+          </label>
+          <input id="nameQuery" name="nameQuery" type="text" autocomplete="off"
+                 spellcheck="false" enterkeyhint="search"
+                 aria-describedby="searchStatus" aria-controls="results">
+          <p id="searchStatus" class="searching" role="status" aria-live="polite"></p>
+          <ul id="results" class="results" hidden></ul>
+        </div>
+
+        <div class="field" id="chosenWrap" hidden>
+          <span class="hint" style="font-weight:600;color:var(--ink)">Signing in</span>
+          <div class="chosen">
+            <div style="flex:1">
+              <strong id="chosenName"></strong>
+              <span class="biz" id="chosenBiz"></span>
+            </div>
+            <button type="button" id="changeChoice">Change</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="field">
+          <label for="visitType">Visit type</label>
+          <select id="visitType" name="visitType">
+            <option value="">Please select</option>
+            <option value="walk_in">Walk-in</option>
+            <option value="appointment">Appointment</option>
           </select>
-          <div class="field-hint">If unsure, refer to student at front desk</div>
         </div>
 
-        <div class="field-group">
-          <label class="field-label" for="visitDate">Date</label>
-          <input type="date" id="visitDate" required>
-        </div>
-
-        <div class="field-group">
-          <label class="field-label">Full Name</label>
-          <div class="name-row">
-            <div class="name-col">
-              <input type="text" id="firstName" required>
-              <div class="sub-label">First Name</div>
-            </div>
-            <div class="name-col">
-              <input type="text" id="lastName" required>
-              <div class="sub-label">Last Name</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="field-group">
-          <label class="field-label">Please select one</label>
-          <div class="radio-group">
-            <label class="radio-option"><input type="radio" name="visitType" value="Walk-in" required> Walk-in</label>
-            <label class="radio-option"><input type="radio" name="visitType" value="Appointment"> Appointment</label>
-          </div>
-        </div>
-
-        <div class="field-group">
-          <label class="field-label" for="consultantSelect">Please select the name of the Student Consultant you're working with</label>
-          <select id="consultantSelect">
-            <option value="" disabled selected>Please Select</option>
+        <div class="field">
+          <label for="consultantSelect">Student consultant
+            <span class="hint">Who you are working with today.</span>
+          </label>
+          <select id="consultantSelect" name="consultant">
+<option value="" disabled selected>Please Select</option>
             <option>Akul Ghambhani</option>
             <option>Alex Yu</option>
             <option>Andrea Diaz Matuty</option>
@@ -262,29 +167,10 @@
           </select>
         </div>
 
-
-
-        <div class="field-group">
-          <label class="field-label">Which stage is your business currently in?</label>
-          <div class="radio-group">
-            <label class="radio-option"><input type="radio" name="bizStage" value="Planning" required> Planning: those preparing to launch and have not made sales yet</label>
-            <label class="radio-option"><input type="radio" name="bizStage" value="Launch"> Launch: those that have made one-off sales but not consistently</label>
-            <label class="radio-option"><input type="radio" name="bizStage" value="Stabilization"> Stabilization: those making regular monthly sales with steady customers</label>
-          </div>
-        </div>
-
-        <div class="field-group">
-          <label class="field-label">Have you been to the Collaboration Hub before?</label>
-          <div class="radio-group">
-            <label class="radio-option"><input type="radio" name="beenBefore" value="Yes" required> Yes</label>
-            <label class="radio-option"><input type="radio" name="beenBefore" value="No"> No</label>
-          </div>
-        </div>
-
-        <div class="field-group">
-          <label class="field-label" for="helpArea">Principle area you need help with</label>
-          <select id="helpArea">
-            <option value="" disabled selected>Please Select</option>
+        <div class="field">
+          <label for="helpArea">Main area you need help with</label>
+          <select id="helpArea" name="helpArea">
+            <option value="">Please Select</option>
             <option>Accounting</option>
             <option>Artificial Intelligence (AI)</option>
             <option>Business Plan</option>
@@ -307,199 +193,266 @@
           </select>
         </div>
 
-        <div class="field-group">
-          <label class="field-label" for="otherProblems">Any other problems you are facing?</label>
-          <textarea id="otherProblems" rows="3"></textarea>
+        <div class="field">
+          <label for="otherProblems">Anything else we should know?
+            <span class="hint">Optional.</span>
+          </label>
+          <textarea id="otherProblems" name="otherProblems" maxlength="1000"></textarea>
         </div>
+      </section>
 
-        <div class="footer-logo">
-          <div class="fl-box">
-            <div class="fl-icon">ND</div>
-            <div class="fl-text">
-              <div class="ft-main">SBEAP Collaboration Hub</div>
-              <div class="ft-line"></div>
-              <div class="ft-sub">Keough School of Global Affairs</div>
-            </div>
-          </div>
-        </div>
+      <button type="submit" class="primary" id="submitBtn">Sign in</button>
+    </form>
+  </main>
 
-        <div class="submit-area">
-          <button type="submit" class="btn-submit">Submit</button>
-        </div>
-      </form>
-    </div>
-
-    <div class="success-screen" id="successScreen">
-      <div class="success-header">
-        <h1 class="form-title" style="color: #1A7A2E;">&#10003; Sign-In Complete</h1>
-        <p style="color: #0C2340; margin-top: 8px; font-size: 15px;">
-          Please print the sign-in slip below and deliver it to the assigned consultant.
-        </p>
-      </div>
-      <div class="print-slip" id="printSlip">
-        <h2>SBEAP Collaboration Hub &mdash; Sign-In Slip</h2>
-        <div class="slip-subtitle" id="slipTimestamp"></div>
-        <div id="slipContent"></div>
-        <div class="slip-footer">
-          SBEAP Collaboration Hub &bull; Keough School of Global Affairs &bull; University of Notre Dame
-        </div>
-      </div>
-      <button class="btn-print" onclick="window.print()">&#128424; Print Sign-In Slip</button>
-      <button class="btn-new" onclick="resetForm()">&#8634; New Sign-In</button>
-      <div class="saving-notice" id="savingNotice"></div>
-      <div class="auto-reset-notice">
-        This screen will automatically reset in <strong id="countdown">60</strong> seconds.
+  <!-- ========================== SUCCESS =========================== -->
+  <main id="successScreen" hidden>
+    <div class="card">
+      <p class="status" id="successHeadline"></p>
+      <p class="sub" id="successDetail"></p>
+      <div id="slipContent" style="margin-top:1rem">
+        <hr>
+        <p style="margin:.25rem 0"><strong id="slipName"></strong></p>
+        <p style="margin:.25rem 0" id="slipMeta"></p>
+        <p style="margin:.25rem 0;color:var(--muted)" id="slipTimestamp"></p>
       </div>
     </div>
-
-  </div>
+    <div class="card noprint">
+      <div class="field"><button type="button" class="secondary" id="printSlip">Print this slip</button></div>
+      <div class="field"><button type="button" class="primary" id="againBtn">Sign in another entrepreneur</button></div>
+    </div>
+  </main>
 </div>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Set today's date by default
-    var today = new Date();
-    var yyyy = today.getFullYear();
-    var mm = String(today.getMonth() + 1).padStart(2, '0');
-    var dd = String(today.getDate()).padStart(2, '0');
-    document.getElementById('visitDate').value = yyyy + '-' + mm + '-' + dd;
+(function(){
+  "use strict";
 
-    // Add event listeners to the radio buttons
-    const walkInRadio = document.querySelector('input[name="visitType"][value="Walk-in"]');
-    const appointmentRadio = document.querySelector('input[name="visitType"][value="Appointment"]');
-    const consultantSelect = document.getElementById('consultantSelect');
+  // Server-side endpoint. There is no database key on this page: the function
+  // holds the credentials and decides everything that matters.
+  var API = "https://srmtohwucijjniwajkhp.supabase.co/functions/v1/hub-signin";
 
-    function toggleConsultantField() {
-      if (appointmentRadio.checked) {
-        consultantSelect.disabled = false;     // Enable for Appointment
-        consultantSelect.style.backgroundColor = "#FFFFFF";
-        consultantSelect.style.cursor = "pointer";
-      } else {
-        consultantSelect.disabled = true;      // Disable for Walk-in
-        consultantSelect.style.backgroundColor = "#f0f0f0";
-        consultantSelect.style.cursor = "not-allowed";
-      }
-    }
+  var $ = function(id){ return document.getElementById(id); };
+  var chosen = null;          // {participant_id, display_name, business_name}
+  var typedName = "";         // preserved verbatim -- matters for joint records
+  var submitting = false;
+  var submissionId = null;    // idempotency key, minted once per attempt
+  var searchSeq = 0;          // guards against out-of-order search responses
 
-    // Listen to changes on both radio buttons
-    walkInRadio.addEventListener('change', toggleConsultantField);
-    appointmentRadio.addEventListener('change', toggleConsultantField);
-
-    // Initial state: Walk-in is not selected by default, so start disabled
-    toggleConsultantField();
-  });
-
-  var countdownInterval = null;
-
-  function handleSubmit(e) {
-    e.preventDefault();
-
-    var data = {
-      'SBEAP Cohort Year': document.getElementById('cohortYear').value,
-      'Date': document.getElementById('visitDate').value,
-      'First Name': document.getElementById('firstName').value,
-      'Last Name': document.getElementById('lastName').value,
-      'Visit Type': (document.querySelector('input[name="visitType"]:checked') || {}).value || '',
-      'Consultant Dropdown': document.getElementById('consultantSelect').value || '',
-      'Consultant Entered': '',
-      'Business Stage': (document.querySelector('input[name="bizStage"]:checked') || {}).value || '',
-      'Been Before': (document.querySelector('input[name="beenBefore"]:checked') || {}).value || '',
-      'Help Area': document.getElementById('helpArea').value || '',
-      'Other Problems': document.getElementById('otherProblems').value || 'None'
-    };
-
-    var consultant = data['Consultant Entered'] && data['Consultant Entered'].trim() !== ''
-      ? data['Consultant Entered']
-      : (data['Consultant Dropdown'] || 'N/A');
-
-    var slipFields = [
-      ['Name', data['First Name'] + ' ' + data['Last Name']],
-      ['SBEAP Cohort Year', data['SBEAP Cohort Year']],
-      ['Date', data['Date']],
-      ['Visit Type', data['Visit Type']],
-      ['Student Consultant', consultant],
-      ['Business Stage', data['Business Stage']],
-      ['First Visit?', data['Been Before'] === 'No' ? 'Yes - First Visit' : 'Returning'],
-      ['Help Area', data['Help Area'] || 'N/A'],
-      ['Other Problems', data['Other Problems']]
-    ];
-
-    var html = '';
-    for (var i = 0; i < slipFields.length; i++) {
-      html += '<div class="slip-row"><div class="slip-label">' + slipFields[i][0] +
-        '</div><div class="slip-value">' + slipFields[i][1] + '</div></div>';
-    }
-
-    document.getElementById('slipContent').innerHTML = html;
-    document.getElementById('slipTimestamp').textContent =
-      'Submitted: ' + new Date().toLocaleString('en-US', {
-        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
-        hour: 'numeric', minute: '2-digit', hour12: true
-      });
-
-    document.getElementById('formScreen').classList.add('hidden');
-    document.getElementById('successScreen').classList.add('active');
-
-    var seconds = 60;
-    document.getElementById('countdown').textContent = seconds;
-    countdownInterval = setInterval(function() {
-      seconds--;
-      document.getElementById('countdown').textContent = seconds;
-      if (seconds <= 0) { resetForm(); }
-    }, 1000);
-
-    sendToGoogleSheet(data);
-  }
-
-  function resetForm() {
-    clearInterval(countdownInterval);
-    document.getElementById('signInForm').reset();
-
-    // Reset date
-    var today = new Date();
-    var yyyy = today.getFullYear();
-    var mm = String(today.getMonth() + 1).padStart(2, '0');
-    var dd = String(today.getDate()).padStart(2, '0');
-    document.getElementById('visitDate').value = yyyy + '-' + mm + '-' + dd;
-
-    document.getElementById('formScreen').classList.remove('hidden');
-    document.getElementById('successScreen').classList.remove('active');
-    document.getElementById('savingNotice').textContent = '';
-
-    // Re-apply the consultant field logic after reset
-    const toggleConsultantField = () => {
-      const appointmentRadio = document.querySelector('input[name="visitType"][value="Appointment"]');
-      const consultantSelect = document.getElementById('consultantSelect');
-      if (appointmentRadio.checked) {
-        consultantSelect.disabled = false;
-        consultantSelect.style.backgroundColor = "#FFFFFF";
-        consultantSelect.style.cursor = "pointer";
-      } else {
-        consultantSelect.disabled = true;
-        consultantSelect.style.backgroundColor = "#f0f0f0";
-        consultantSelect.style.cursor = "not-allowed";
-      }
-    };
-    toggleConsultantField();
-
-    window.scrollTo(0, 0);
-  }
-
-  function sendToGoogleSheet(data) {
-    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxbUxcWTce3TWB2l4DnxfJ8wGK3OfpfzSZVXs0FqewxYzQJ99sO3l95EMRak0UQuwx/exec';
-    document.getElementById('savingNotice').textContent = 'Saving to Google Sheets...';
-    fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    }).then(function() {
-      document.getElementById('savingNotice').textContent = 'Saved to Google Sheets';
-    }).catch(function(err) {
-      document.getElementById('savingNotice').textContent = 'Note: Could not save to Google Sheets. Please check internet connection.';
-      console.error('Google Sheets error:', err);
+  function showError(msg){
+    var box = $("formError");
+    // Unhide BEFORE writing the text. A hidden role="alert" is not in the
+    // accessibility tree, so text set while hidden produces no mutation for a
+    // screen reader to announce, and revealing it afterwards is routinely
+    // missed. Revealing first, then writing on the next frame, means the
+    // mutation happens inside a live region that is already present. On a form
+    // where the failure message is "your visit was not recorded", silence here
+    // is the whole bug.
+    box.textContent = "";
+    box.hidden = false;
+    requestAnimationFrame(function(){
+      box.textContent = msg;
+      box.scrollIntoView({block:"nearest"});
     });
   }
+  function clearError(){ $("formError").hidden = true; $("formError").textContent = ""; }
+
+  function uuid(){
+    if (crypto && crypto.randomUUID) return crypto.randomUUID();
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c){
+      var r = crypto.getRandomValues(new Uint8Array(1))[0] % 16;
+      var v = c === "x" ? r : ((r & 0x3) | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  // ---------------------------------------------------------------- search
+  function renderResults(rows){
+    var ul = $("results");
+    ul.innerHTML = "";
+    if (!rows || rows.length === 0){ ul.hidden = true; return; }
+    rows.forEach(function(r){
+      var li = document.createElement("li");
+      var b  = document.createElement("button");
+      b.type = "button";
+      b.appendChild(document.createTextNode(r.display_name || ""));
+      if (r.business_name){
+        var s = document.createElement("span");
+        s.className = "biz";
+        s.textContent = r.business_name;
+        b.appendChild(s);
+      }
+      b.addEventListener("click", function(){ choose(r); });
+      li.appendChild(b);
+      ul.appendChild(li);
+    });
+    ul.hidden = false;
+  }
+
+  function choose(r){
+    chosen = r;
+    $("chosenName").textContent = r.display_name || "";
+    $("chosenBiz").textContent  = r.business_name || "";
+    $("chosenWrap").hidden = false;
+    $("results").hidden = true;
+    $("searchStatus").textContent = "";
+    clearError();
+    $("visitType").focus();
+  }
+
+  $("changeChoice").addEventListener("click", function(){
+    chosen = null;
+    $("chosenWrap").hidden = true;
+    $("nameQuery").focus();
+    $("nameQuery").select();
+  });
+
+  var searchTimer = null;
+  $("nameQuery").addEventListener("input", function(e){
+    typedName = e.target.value;
+    chosen = null;
+    $("chosenWrap").hidden = true;
+    clearTimeout(searchTimer);
+    var q = typedName.trim();
+    if (q.length < 3){
+      $("results").hidden = true;
+      $("searchStatus").textContent = q.length ? "Keep typing — at least 3 letters." : "";
+      return;
+    }
+    $("searchStatus").textContent = "Searching…";
+    searchTimer = setTimeout(function(){ runSearch(q); }, 250);
+  });
+
+  function runSearch(q){
+    var seq = ++searchSeq;
+    fetch(API, {
+      method:"POST",
+      headers:{"content-type":"application/json"},
+      body: JSON.stringify({action:"search", query:q})
+    }).then(function(res){
+      if (res.status === 429) throw new Error("Too many searches just now. Please wait a moment and try again.");
+      if (!res.ok) throw new Error("We could not search right now. Please try again.");
+      return res.json();
+    }).then(function(data){
+      if (seq !== searchSeq) return;            // a newer search already answered
+      var rows = (data && data.results) || [];
+      $("searchStatus").textContent = rows.length ? "" : "No match found. Check the spelling, or ask a consultant for help.";
+      renderResults(rows);
+    }).catch(function(err){
+      if (seq !== searchSeq) return;
+      $("searchStatus").textContent = "";
+      renderResults([]);
+      showError(err.message);
+    });
+  }
+
+  // ---------------------------------------------------------------- submit
+  $("signInForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    if (submitting) return;                     // hard guard against double taps
+    clearError();
+
+    if (!chosen){ showError("Please choose who is signing in from the list."); $("nameQuery").focus(); return; }
+    var visitType = $("visitType").value;
+    if (!visitType){ showError("Please choose a visit type."); $("visitType").focus(); return; }
+
+    submitting = true;
+    var btn = $("submitBtn");
+    btn.disabled = true;
+    btn.textContent = "Signing in…";
+    if (!submissionId) submissionId = uuid();   // same key survives a retry
+
+    fetch(API, {
+      method:"POST",
+      headers:{"content-type":"application/json"},
+      body: JSON.stringify({
+        action:"submit",
+        participant_id: chosen.participant_id,
+        visit_type: visitType,
+        visitor_name: typedName.trim(),         // joint records keep the real person
+        consultant_name: $("consultantSelect").value || null,
+        help_area: $("helpArea").value || null,
+        notes: $("otherProblems").value || null,
+        submission_id: submissionId
+      })
+    }).then(function(res){
+      return res.json().catch(function(){ return null; }).then(function(body){
+        if (!res.ok){
+          var m = "We could not record your visit. Please try again.";
+          if (res.status === 429) m = "Too many sign-ins from this connection. Please wait a moment and try again.";
+          else if (body && body.error === "participant_not_eligible") m = "That entrepreneur is not currently active for South Bend. Please ask a consultant for help.";
+          throw new Error(m);
+        }
+        return body;
+      });
+    }).then(function(body){
+      // Success is shown ONLY here -- after the server confirmed the write.
+      succeed(body);
+    }).catch(function(err){
+      // The submission is unresolved, so nothing is cleared and the same
+      // idempotency key is reused: retrying cannot create a second visit.
+      submitting = false;
+      btn.disabled = false;
+      btn.textContent = "Try again";
+      showError(err.message);
+    });
+  });
+
+  function succeed(body){
+    var first = body && body.visitor_status === "first_visit";
+    var already = body && (body.status === "already_recorded" || body.status === "already_signed_in_today");
+
+    $("successHeadline").textContent = first
+      ? "You're signed in — first recorded Hub visit"
+      : "You're signed in — welcome back";
+    $("successDetail").textContent = already
+      ? "This visit was already recorded today, so we have not added a duplicate."
+      : "Your physical Hub visit has been recorded.";
+
+    $("slipName").textContent = (chosen && chosen.display_name) || typedName;
+    var bits = [];
+    if ($("visitType").value) bits.push($("visitType").value === "walk_in" ? "Walk-in" : "Appointment");
+    if ($("consultantSelect").value) bits.push("Consultant: " + $("consultantSelect").value);
+    if ($("helpArea").value) bits.push("Help area: " + $("helpArea").value);
+    $("slipMeta").textContent = bits.join(" · ");
+    $("slipTimestamp").textContent = "Visit date: " + ((body && body.visit_date_local) || "");
+
+    $("formScreen").hidden = true;
+    $("successScreen").hidden = false;
+    $("successHeadline").setAttribute("tabindex","-1");
+    $("successHeadline").focus();
+    // Replace history so Back does not return to a filled-in form showing the
+    // previous visitor's details.
+    try { history.replaceState({signedIn:true}, "", location.pathname + location.search); } catch(_){}
+  }
+
+  $("printSlip").addEventListener("click", function(){ window.print(); });
+
+  $("againBtn").addEventListener("click", function(){ resetForNextVisitor(); });
+
+  function resetForNextVisitor(){
+    chosen = null; typedName = ""; submitting = false; submissionId = null; searchSeq++;
+    $("signInForm").reset();
+    $("nameQuery").value = "";
+    $("results").innerHTML = ""; $("results").hidden = true;
+    $("searchStatus").textContent = "";
+    $("chosenWrap").hidden = true;
+    $("chosenName").textContent = ""; $("chosenBiz").textContent = "";
+    $("slipName").textContent = ""; $("slipMeta").textContent = ""; $("slipTimestamp").textContent = "";
+    $("successHeadline").textContent = ""; $("successDetail").textContent = "";
+    clearError();
+    var btn = $("submitBtn"); btn.disabled = false; btn.textContent = "Sign in";
+    $("successScreen").hidden = true;
+    $("formScreen").hidden = false;
+    $("nameQuery").focus();
+  }
+
+  // If the page is restored from the back/forward cache after a completed
+  // sign-in, do not leave the previous visitor's answers on screen.
+  window.addEventListener("pageshow", function(ev){
+    if (ev.persisted && $("successScreen").hidden === false) resetForNextVisitor();
+  });
+})();
 </script>
 </body>
 </html>
