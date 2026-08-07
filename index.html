@@ -28,13 +28,13 @@
   .brand{background:linear-gradient(160deg,var(--nd-navy),var(--navy-2));
     margin:0 -1rem 1.25rem;padding:1.5rem 1rem 1.6rem;border-bottom:3px solid var(--accent)}
   .brand-in{max-width:34rem;margin:0 auto;display:flex;flex-direction:column;gap:1.15rem}
-  /* Corner mark: it identifies the owner, it is not the headline. Sitting it top
-     right keeps the band's weight on the title, which is what the person is
-     actually here to read. */
-  .wordmark{display:flex;flex-direction:column;gap:.1rem;align-self:flex-end;text-align:right}
-  .wm-1{font-size:.95rem;font-weight:800;letter-spacing:.2em;color:#fff;line-height:1}
-  .wm-2{font-size:.62rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
-    color:#5eead4;line-height:1.2}
+  /* Corner mark: identifies the owner, it is not the headline. The logo artwork
+     is dark on transparent -- built for white surfaces -- so it sits on a white
+     chip rather than directly on the navy, where it went muddy. Height is fixed
+     and width follows the 247x135 aspect; both are set so nothing can stretch. */
+  .logo-chip{align-self:flex-end;background:#fff;border-radius:10px;padding:.45rem .6rem;
+    line-height:0;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+  .logo-chip img{height:34px;width:62px;display:block}
   header{padding:0}
   h1{font-size:1.5rem;line-height:1.2;margin:0 0 .3rem;color:#fff;letter-spacing:-.02em;text-wrap:balance}
   .sub{color:#cbd5e1;font-size:.95rem;margin:0}
@@ -93,9 +93,9 @@
 
   <div class="brand">
     <div class="brand-in">
-      <div class="wordmark">
-        <span class="wm-1">UPBI</span>
-        <span class="wm-2">Urban Poverty &amp; Business Initiative</span>
+      <div class="logo-chip">
+        <img src="assets/upbi-logo.png" width="62" height="34"
+             alt="UPBI — Urban Poverty and Business Initiative">
       </div>
       <header>
         <h1>Collaboration Hub Sign-In</h1>
