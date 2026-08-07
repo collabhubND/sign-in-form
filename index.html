@@ -7,9 +7,15 @@
 <title>Collaboration Hub Sign-In</title>
 <style>
   :root{
-    --nd-navy:#0c2340; --nd-gold:#ae9142; --ink:#16202e; --muted:#5b6675;
-    --line:#d9dee5; --bg:#f4f6f9; --card:#fff; --ok:#1c6b4a; --err:#a3271f;
-    --focus:#1a6be0; --radius:12px; --tap:52px;
+    /* UPBI palette, matching the dashboard and Hub Tracker exactly. The Notre
+       Dame navy + gold were retired everywhere else; teal is the accent. */
+    --nd-navy:#071d33; --navy-2:#0b2b4a;
+    --accent:#0d9488; --accent-2:#0f766e; --accent-bg:#ccfbf1;
+    --ink:#0f172a; --muted:#475569;
+    --line:#e2e8f0; --line-2:#cbd5e1; --bg:#f0f4f8; --card:#fff;
+    --ok:#059669; --err:#dc2626; --err-bg:#fee2e2;
+    --focus:#0d9488; --radius:14px; --tap:52px;
+    --shadow:0 1px 3px rgba(15,23,42,.06),0 6px 16px rgba(15,23,42,.05);
   }
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
@@ -18,11 +24,16 @@
     font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
-  .wrap{max-width:34rem;margin:0 auto;padding:1rem 1rem 3rem}
-  header{padding:1.25rem 0 .75rem}
-  h1{font-size:1.35rem;line-height:1.25;margin:0 0 .25rem;color:var(--nd-navy);text-wrap:balance}
-  .sub{color:var(--muted);font-size:.95rem;margin:0}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:1rem;margin-bottom:1rem}
+  .wrap{max-width:34rem;margin:0 auto;padding:0 1rem 3rem}
+  .brand{background:linear-gradient(160deg,var(--nd-navy),var(--navy-2));
+    margin:0 -1rem 1.25rem;padding:1.5rem 1rem 1.6rem;border-bottom:3px solid var(--accent)}
+  .brand-in{max-width:34rem;margin:0 auto;display:flex;flex-direction:column;gap:.9rem}
+  .brand img{height:38px;width:auto;display:block}
+  header{padding:0}
+  h1{font-size:1.5rem;line-height:1.2;margin:0 0 .3rem;color:#fff;letter-spacing:-.02em;text-wrap:balance}
+  .sub{color:#cbd5e1;font-size:.95rem;margin:0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:1.15rem;margin-bottom:1rem;box-shadow:var(--shadow)}
   label{display:block;font-weight:600;margin:0 0 .35rem;font-size:.98rem}
   .hint{font-weight:400;color:var(--muted);font-size:.85rem;display:block;margin-top:.15rem}
   input,select,textarea{
@@ -39,24 +50,27 @@
     min-height:var(--tap);font-size:1rem;font-family:inherit;font-weight:600;
     border-radius:10px;border:1px solid transparent;cursor:pointer;padding:.7rem 1rem;
   }
-  .primary{background:var(--nd-navy);color:#fff;width:100%}
-  .primary[disabled]{background:#7a8699;cursor:not-allowed}
-  .secondary{background:#fff;color:var(--nd-navy);border-color:var(--line);width:100%}
+  .primary{background:var(--accent);color:#fff;width:100%;box-shadow:0 1px 2px rgba(15,23,42,.10)}
+  .primary:hover{background:var(--accent-2)}
+  .primary[disabled]{background:#94a3b8;cursor:not-allowed;box-shadow:none}
+  .secondary{background:#fff;color:var(--nd-navy);border-color:var(--line-2);width:100%}
+  .secondary:hover{border-color:var(--accent);color:var(--accent-2)}
   .results{list-style:none;margin:.6rem 0 0;padding:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
   .results li+li{border-top:1px solid var(--line)}
   .results button{
     width:100%;text-align:left;background:#fff;border:0;border-radius:0;padding:.8rem;font-weight:600;
   }
-  .results button:hover{background:#eef2f7}
+  .results button:hover{background:var(--accent-bg)}
   .results .biz{display:block;font-weight:400;color:var(--muted);font-size:.9rem;margin-top:.1rem}
-  .chosen{display:flex;gap:.75rem;align-items:flex-start;background:#eef4ee;border:1px solid #cfe0d2;border-radius:10px;padding:.8rem}
+  .chosen{display:flex;gap:.75rem;align-items:flex-start;background:var(--accent-bg);
+    border:1px solid #5eead4;border-radius:10px;padding:.8rem}
   .chosen strong{display:block}
   .chosen .biz{color:var(--muted);font-size:.9rem}
   .chosen button{background:none;border:0;color:var(--focus);text-decoration:underline;padding:.25rem;min-height:auto;font-size:.9rem}
   .msg{border-radius:10px;padding:.8rem;margin:0 0 1rem;font-size:.95rem}
-  .msg.err{background:#fdecea;border:1px solid #f0c2bd;color:var(--err)}
-  .msg.info{background:#eef2f7;border:1px solid var(--line);color:var(--muted)}
-  .status{font-size:1.05rem;font-weight:600;color:var(--ok);margin:0 0 .5rem}
+  .msg.err{background:var(--err-bg);border:1px solid #fca5a5;color:#991b1b}
+  .msg.info{background:#f8fafc;border:1px solid var(--line);color:var(--muted)}
+  .status{font-size:1.1rem;font-weight:700;color:#065f46;margin:0 0 .5rem}
   .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .searching{color:var(--muted);font-size:.9rem;margin:.5rem 0 0}
   hr{border:0;border-top:1px solid var(--line);margin:1.25rem 0}
@@ -71,10 +85,15 @@
 <body>
 <div class="wrap">
 
-  <header>
-    <h1>Collaboration Hub Sign-In</h1>
-    <p class="sub">Recording your visit to the Collaboration Hub.</p>
-  </header>
+  <div class="brand">
+    <div class="brand-in">
+      <img src="assets/upbi-logo.png" alt="Urban Poverty and Business Initiative">
+      <header>
+        <h1>Collaboration Hub Sign-In</h1>
+        <p class="sub">Recording your visit to the Collaboration Hub.</p>
+      </header>
+    </div>
+  </div>
 
   <!-- ============================ FORM ============================ -->
   <main id="formScreen">
