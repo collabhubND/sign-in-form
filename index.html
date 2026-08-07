@@ -28,7 +28,10 @@
   .brand{background:linear-gradient(160deg,var(--nd-navy),var(--navy-2));
     margin:0 -1rem 1.25rem;padding:1.5rem 1rem 1.6rem;border-bottom:3px solid var(--accent)}
   .brand-in{max-width:34rem;margin:0 auto;display:flex;flex-direction:column;gap:.9rem}
-  .brand img{height:38px;width:auto;display:block}
+  .wordmark{display:flex;flex-direction:column;gap:.2rem}
+  .wm-1{font-size:1.55rem;font-weight:800;letter-spacing:.16em;color:#fff;line-height:1}
+  .wm-2{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+    color:#5eead4;line-height:1.2}
   header{padding:0}
   h1{font-size:1.5rem;line-height:1.2;margin:0 0 .3rem;color:#fff;letter-spacing:-.02em;text-wrap:balance}
   .sub{color:#cbd5e1;font-size:.95rem;margin:0}
@@ -87,7 +90,10 @@
 
   <div class="brand">
     <div class="brand-in">
-      <img src="assets/upbi-logo.png" alt="Urban Poverty and Business Initiative">
+      <div class="wordmark">
+        <span class="wm-1">UPBI</span>
+        <span class="wm-2">Urban Poverty &amp; Business Initiative</span>
+      </div>
       <header>
         <h1>Collaboration Hub Sign-In</h1>
         <p class="sub">Recording your visit to the Collaboration Hub.</p>
