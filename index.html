@@ -79,6 +79,9 @@
   .status{font-size:1.1rem;font-weight:700;color:#065f46;margin:0 0 .5rem}
   .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .searching{color:var(--muted);font-size:.9rem;margin:.5rem 0 0}
+  .search-row{display:flex;gap:.5rem}
+  .search-row input{flex:1;min-width:0}
+  .search-row .primary{width:auto;flex:none}
   hr{border:0;border-top:1px solid var(--line);margin:1.25rem 0}
   @media (prefers-reduced-motion:no-preference){.card{transition:opacity .15s ease}}
   @media print{
@@ -113,11 +116,14 @@
       <section class="card">
         <div class="field">
           <label for="nameQuery">Who is signing in?
-            <span class="hint">Type at least 3 letters of the entrepreneur's name, then choose from the list.</span>
+            <span class="hint">Type at least 3 letters of the entrepreneur's name, then tap Search.</span>
           </label>
-          <input id="nameQuery" name="nameQuery" type="text" autocomplete="off"
-                 spellcheck="false" enterkeyhint="search"
-                 aria-describedby="searchStatus" aria-controls="results">
+          <div class="search-row">
+            <input id="nameQuery" name="nameQuery" type="text" autocomplete="off"
+                   spellcheck="false" enterkeyhint="search"
+                   aria-describedby="searchStatus" aria-controls="results">
+            <button type="button" class="primary" id="searchBtn" disabled>Search</button>
+          </div>
           <p id="searchStatus" class="searching" role="status" aria-live="polite"></p>
           <ul id="results" class="results" hidden></ul>
         </div>
@@ -338,42 +344,84 @@
     $("nameQuery").select();
   });
 
-  var searchTimer = null;
+  // One explicit Search (button or Enter) = one request. Typing never searches:
+  // this is a shared kiosk behind one IP, and searching per keystroke exhausted
+  // the server's per-IP limit on 2026-09-28.
+  var lastKey = null, lastRows = null;  // most recent successful search
+  var inFlight = false;
+  function cleanQuery(v){ return (v || "").trim().replace(/\s+/g, " "); }
+
+  function updateSearchBtn(){
+    $("searchBtn").disabled = inFlight || cleanQuery($("nameQuery").value).length < 3;
+  }
+
+  function showRows(rows){
+    $("searchStatus").textContent = rows.length ? "" : "No match found. Check the spelling, or ask a consultant for help.";
+    renderResults(rows);
+  }
+
   $("nameQuery").addEventListener("input", function(e){
     typedName = e.target.value;
     chosen = null;
     $("chosenWrap").hidden = true;
-    clearTimeout(searchTimer);
-    var q = typedName.trim();
-    if (q.length < 3){
-      $("results").hidden = true;
-      $("searchStatus").textContent = q.length ? "Keep typing — at least 3 letters." : "";
-      return;
-    }
-    $("searchStatus").textContent = "Searching…";
-    searchTimer = setTimeout(function(){ runSearch(q); }, 250);
+    $("results").hidden = true;
+    var n = cleanQuery(typedName).length;
+    $("searchStatus").textContent = n === 0 ? "" : n < 3 ? "Type at least 3 letters, then tap Search." : "";
+    updateSearchBtn();
   });
 
-  function runSearch(q){
+  $("nameQuery").addEventListener("keydown", function(e){
+    if (e.key !== "Enter" || e.isComposing) return;
+    e.preventDefault();                         // Enter here searches; it never submits the form
+    doSearch();
+  });
+
+  $("searchBtn").addEventListener("click", doSearch);
+
+  function doSearch(){
+    if (inFlight) return;
+    var q = cleanQuery($("nameQuery").value);
+    if (q.length < 3){
+      $("searchStatus").textContent = "Type at least 3 letters, then tap Search.";
+      return;
+    }
+    clearError();
+    var key = q.toLowerCase();
+    if (key === lastKey){ showRows(lastRows); return; }  // same query: no second request
+    runSearch(q, key);
+  }
+
+  function runSearch(q, key){
     var seq = ++searchSeq;
+    inFlight = true;
+    updateSearchBtn();
+    $("searchStatus").textContent = "Searching…";
     fetch(API, {
       method:"POST",
       headers:{"content-type":"application/json"},
       body: JSON.stringify({action:"search", query:q})
     }).then(function(res){
-      if (res.status === 429) throw new Error("Too many searches just now. Please wait a moment and try again.");
+      if (res.status === 429) throw new Error("Too many searches from this Hub device just now. Please wait a few minutes and try again.");
       if (!res.ok) throw new Error("We could not search right now. Please try again.");
       return res.json();
     }).then(function(data){
-      if (seq !== searchSeq) return;            // a newer search already answered
-      var rows = (data && data.results) || [];
-      $("searchStatus").textContent = rows.length ? "" : "No match found. Check the spelling, or ask a consultant for help.";
-      renderResults(rows);
+      if (seq !== searchSeq) return;            // the form was reset meanwhile
+      var rows = ((data && data.results) || []).slice(0, 8);
+      lastKey = key; lastRows = rows;
+      if (cleanQuery($("nameQuery").value).toLowerCase() !== key){
+        $("searchStatus").textContent = "";     // the name changed while searching
+        return;
+      }
+      showRows(rows);
     }).catch(function(err){
       if (seq !== searchSeq) return;
       $("searchStatus").textContent = "";
       renderResults([]);
       showError(err.message);
+    }).then(function(){
+      if (seq !== searchSeq) return;
+      inFlight = false;
+      updateSearchBtn();
     });
   }
 
@@ -463,6 +511,7 @@
 
   function resetForNextVisitor(){
     chosen = null; typedName = ""; submitting = false; submissionId = null; searchSeq++;
+    lastKey = null; lastRows = null; inFlight = false;
     $("signInForm").reset();
     $("nameQuery").value = "";
     $("results").innerHTML = ""; $("results").hidden = true;
@@ -475,6 +524,7 @@
     var btn = $("submitBtn"); btn.disabled = false; btn.textContent = "Sign in";
     $("successScreen").hidden = true;
     $("formScreen").hidden = false;
+    updateSearchBtn();
     $("nameQuery").focus();
   }
 
