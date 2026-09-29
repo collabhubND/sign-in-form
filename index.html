@@ -79,9 +79,6 @@
   .status{font-size:1.1rem;font-weight:700;color:#065f46;margin:0 0 .5rem}
   .visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .searching{color:var(--muted);font-size:.9rem;margin:.5rem 0 0}
-  .search-row{display:flex;gap:.5rem}
-  .search-row input{flex:1;min-width:0}
-  .search-row .primary{width:auto;flex:none}
   hr{border:0;border-top:1px solid var(--line);margin:1.25rem 0}
   @media (prefers-reduced-motion:no-preference){.card{transition:opacity .15s ease}}
   @media print{
@@ -116,14 +113,11 @@
       <section class="card">
         <div class="field">
           <label for="nameQuery">Who is signing in?
-            <span class="hint">Type at least 3 letters of the entrepreneur's name, then tap Search.</span>
+            <span class="hint">Type at least 3 letters of the entrepreneur's name, then choose from the list.</span>
           </label>
-          <div class="search-row">
-            <input id="nameQuery" name="nameQuery" type="text" autocomplete="off"
-                   spellcheck="false" enterkeyhint="search"
-                   aria-describedby="searchStatus" aria-controls="results">
-            <button type="button" class="primary" id="searchBtn" disabled>Search</button>
-          </div>
+          <input id="nameQuery" name="nameQuery" type="text" autocomplete="off"
+                 spellcheck="false" enterkeyhint="search"
+                 aria-describedby="searchStatus" aria-controls="results">
           <p id="searchStatus" class="searching" role="status" aria-live="polite"></p>
           <ul id="results" class="results" hidden></ul>
         </div>
@@ -344,15 +338,31 @@
     $("nameQuery").select();
   });
 
-  // One explicit Search (button or Enter) = one request. Typing never searches:
-  // this is a shared kiosk behind one IP, and searching per keystroke exhausted
-  // the server's per-IP limit on 2026-09-28.
-  var lastKey = null, lastRows = null;  // most recent successful search
-  var inFlight = false;
+  // Searches as you type, but economically: this is ONE shared kiosk behind ONE
+  // IP, and searching on every keystroke exhausted the server's per-IP limit on
+  // 2026-09-28. So:
+  //   * a request goes out only once typing pauses (PAUSE_MS), or on Enter;
+  //   * every successful answer is kept for this visitor;
+  //   * when an earlier answer was COMPLETE (fewer than 8 rows) and the new text
+  //     extends it, the list is narrowed here with no request. The server matches
+  //     "full name contains the text" (its prefix matches are subsets of that), so
+  //     narrowing a complete list gives exactly the server's answer.
+  var PAUSE_MS = 500;
+  var cache = {};             // normalised query -> rows, successful answers only
+  var inFlight = null;        // query currently being fetched
+  var pending = false;        // the text changed while a fetch was in flight
+  var searchTimer = null;
   function cleanQuery(v){ return (v || "").trim().replace(/\s+/g, " "); }
 
-  function updateSearchBtn(){
-    $("searchBtn").disabled = inFlight || cleanQuery($("nameQuery").value).length < 3;
+  function localAnswer(key){
+    if (cache.hasOwnProperty(key)) return cache[key];
+    if (/[%_\\]/.test(key)) return null;        // the server treats these as wildcards
+    for (var k in cache){
+      if (cache.hasOwnProperty(k) && cache[k].length < 8 && key.indexOf(k) === 0){
+        return cache[k].filter(function(r){ return (r.display_name || "").toLowerCase().indexOf(key) !== -1; });
+      }
+    }
+    return null;
   }
 
   function showRows(rows){
@@ -364,37 +374,40 @@
     typedName = e.target.value;
     chosen = null;
     $("chosenWrap").hidden = true;
-    $("results").hidden = true;
-    var n = cleanQuery(typedName).length;
-    $("searchStatus").textContent = n === 0 ? "" : n < 3 ? "Type at least 3 letters, then tap Search." : "";
-    updateSearchBtn();
+    clearTimeout(searchTimer);
+    var q = cleanQuery(typedName);
+    if (q.length < 3){
+      $("results").hidden = true;
+      $("searchStatus").textContent = q.length ? "Keep typing — at least 3 letters." : "";
+      return;
+    }
+    var local = localAnswer(q.toLowerCase());
+    if (local){ showRows(local); return; }      // no request needed
+    $("searchStatus").textContent = "Searching…";
+    searchTimer = setTimeout(search, PAUSE_MS);
   });
 
   $("nameQuery").addEventListener("keydown", function(e){
     if (e.key !== "Enter" || e.isComposing) return;
-    e.preventDefault();                         // Enter here searches; it never submits the form
-    doSearch();
+    e.preventDefault();                         // Enter searches now; it never submits the form
+    search();
   });
 
-  $("searchBtn").addEventListener("click", doSearch);
-
-  function doSearch(){
-    if (inFlight) return;
+  function search(){
+    clearTimeout(searchTimer);
     var q = cleanQuery($("nameQuery").value);
-    if (q.length < 3){
-      $("searchStatus").textContent = "Type at least 3 letters, then tap Search.";
-      return;
-    }
-    clearError();
+    if (q.length < 3) return;
     var key = q.toLowerCase();
-    if (key === lastKey){ showRows(lastRows); return; }  // same query: no second request
+    var local = localAnswer(key);
+    if (local){ showRows(local); return; }
+    if (inFlight){ if (inFlight !== key) pending = true; return; }
+    clearError();
     runSearch(q, key);
   }
 
   function runSearch(q, key){
     var seq = ++searchSeq;
-    inFlight = true;
-    updateSearchBtn();
+    inFlight = key;
     $("searchStatus").textContent = "Searching…";
     fetch(API, {
       method:"POST",
@@ -406,22 +419,20 @@
       return res.json();
     }).then(function(data){
       if (seq !== searchSeq) return;            // the form was reset meanwhile
-      var rows = ((data && data.results) || []).slice(0, 8);
-      lastKey = key; lastRows = rows;
-      if (cleanQuery($("nameQuery").value).toLowerCase() !== key){
-        $("searchStatus").textContent = "";     // the name changed while searching
-        return;
-      }
-      showRows(rows);
+      cache[key] = ((data && data.results) || []).slice(0, 8);
+      var now = cleanQuery($("nameQuery").value).toLowerCase();
+      var rows = now.length >= 3 ? localAnswer(now) : null;
+      if (rows) showRows(rows);                 // answers the current text, even if it moved on
     }).catch(function(err){
       if (seq !== searchSeq) return;
+      pending = false;
       $("searchStatus").textContent = "";
       renderResults([]);
       showError(err.message);
     }).then(function(){
       if (seq !== searchSeq) return;
-      inFlight = false;
-      updateSearchBtn();
+      inFlight = null;
+      if (pending){ pending = false; search(); }
     });
   }
 
@@ -511,7 +522,7 @@
 
   function resetForNextVisitor(){
     chosen = null; typedName = ""; submitting = false; submissionId = null; searchSeq++;
-    lastKey = null; lastRows = null; inFlight = false;
+    cache = {}; inFlight = null; pending = false; clearTimeout(searchTimer);
     $("signInForm").reset();
     $("nameQuery").value = "";
     $("results").innerHTML = ""; $("results").hidden = true;
@@ -524,7 +535,6 @@
     var btn = $("submitBtn"); btn.disabled = false; btn.textContent = "Sign in";
     $("successScreen").hidden = true;
     $("formScreen").hidden = false;
-    updateSearchBtn();
     $("nameQuery").focus();
   }
 
