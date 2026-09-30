@@ -489,15 +489,24 @@
   });
 
   function succeed(body){
-    var first = body && body.visitor_status === "first_visit";
-    var already = body && (body.status === "already_recorded" || body.status === "already_signed_in_today");
+    var b = body || {};
+    var first = b.visitor_status === "first_visit";
 
     $("successHeadline").textContent = first
       ? "You're signed in — first recorded Hub visit"
       : "You're signed in — welcome back";
-    $("successDetail").textContent = already
-      ? "This visit was already recorded today, so we have not added a duplicate."
-      : "Your physical Hub visit has been recorded.";
+    // Every visit is recorded; membership earns at most one punch per day. A retry
+    // of the same submission ("already_recorded") carries the original answer.
+    // "already_signed_in_today" only comes from the server before 2026-09-30 (or
+    // its rollback), which did NOT record the visit -- so never say it did.
+    $("successDetail").textContent =
+      b.status === "already_signed_in_today"
+        ? "You already signed in earlier today, so this sign-in was not added again."
+      : b.membership_punch_awarded === true
+        ? "Your physical Hub visit has been recorded. You earned today's membership punch."
+      : b.already_had_qualifying_visit_today === true
+        ? "Your physical Hub visit has been recorded. Today's membership punch was already earned earlier, so your membership level will not increase again today."
+        : "Your physical Hub visit has been recorded.";
 
     $("slipName").textContent = (chosen && chosen.display_name) || typedName;
     var bits = [];

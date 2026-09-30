@@ -260,3 +260,84 @@ test("busy shift: the per-keystroke page blows the old 30/hour limit; the new pa
   assert.ok(now.n <= 2 * (SHIFT.length + 1), `at most two requests per visitor, made ${now.n}`);
   assert.ok(now.n * 3 <= 60, "three such rushes in one hour still fit the 60/hour limit");
 });
+
+// ------------------------------------------------------------ same-day visits
+// Every physical visit is recorded; membership earns at most ONE punch per South
+// Bend day. The mock is the server's contract: one row per submission_id, and a
+// punch only for the first visit of that participant's day.
+function visitServer() {
+  const rows = [];
+  return (b) => {
+    if (b.action === "search") return { status: 200, json: { results: serverSearch(b.query) } };
+    let row = rows.find((r) => r.sid === b.submission_id);
+    const replay = !!row;
+    if (!row) rows.push(row = { sid: b.submission_id, pid: b.participant_id, date: "2026-09-30", id: `visit-${rows.length + 1}` });
+    const mine = rows.filter((r) => r.pid === row.pid);
+    const had = mine.indexOf(row) > 0;                  // an earlier visit today already punched
+    return { status: 200, json: { status: replay ? "already_recorded" : "recorded", visit_id: row.id,
+      visit_date_local: row.date, visitor_status: mine[0] === row ? "first_visit" : "returning",
+      membership_punch_awarded: !had, already_had_qualifying_visit_today: had } };
+  };
+}
+async function signIn(page, name) {
+  await page.fill("#nameQuery", name);
+  await page.press("#nameQuery", "Enter");
+  await page.tap("#results li button");
+  await page.selectOption("#visitType", "walk_in");
+  await page.tap("#submitBtn");
+  await page.waitForSelector("#successScreen:not([hidden])");
+  return { head: await page.textContent("#successHeadline"), detail: await page.textContent("#successDetail") };
+}
+const PUNCH = "Your physical Hub visit has been recorded. You earned today's membership punch.";
+const NO_PUNCH = "Your physical Hub visit has been recorded. Today's membership punch was already earned earlier, so your membership level will not increase again today.";
+
+test("a second visit the same day is a success, is recorded, and earns no second punch", async () => {
+  const { page, ctx, log } = await open(CURRENT, { server: visitServer() });
+  const one = await signIn(page, "Gina Williams");
+  assert.equal(one.head, "You're signed in — first recorded Hub visit");
+  assert.equal(one.detail, PUNCH);
+  await page.tap("#againBtn");
+  const two = await signIn(page, "Gina Williams");
+  assert.equal(two.head, "You're signed in — welcome back");     // not "first" again on the first day
+  assert.equal(two.detail, NO_PUNCH);
+  assert.equal(await page.isHidden("#formError"), true);
+  const subs = log.filter((b) => b.action === "submit");
+  assert.equal(subs.length, 2);
+  assert.notEqual(subs[0].submission_id, subs[1].submission_id, "two visits are two submissions");
+  assert.doesNotMatch(CURRENT, /so we have not added a duplicate/);
+  await ctx.close();
+});
+
+test("a failed sign-in retries with the SAME submission_id and shows the original punch answer", async () => {
+  const real = visitServer();
+  let calls = 0;
+  const { page, ctx, log } = await open(CURRENT, { server: (b) => {
+    if (b.action !== "submit") return real(b);
+    const r = real(b);                                   // the write lands...
+    return ++calls === 1 ? { status: 502, json: { error: "submit_failed" } } : r;   // ...but the answer is lost
+  } });
+  await page.fill("#nameQuery", "Gina Williams");
+  await page.press("#nameQuery", "Enter");
+  await page.tap("#results li button");
+  await page.selectOption("#visitType", "walk_in");
+  await page.tap("#submitBtn");
+  await page.waitForSelector("#formError:not([hidden])");
+  assert.equal(await page.textContent("#submitBtn"), "Try again");
+  await page.tap("#submitBtn");
+  await page.waitForSelector("#successScreen:not([hidden])");
+  assert.equal(await page.textContent("#successDetail"), PUNCH);   // the retry is not a second visit
+  const subs = log.filter((b) => b.action === "submit");
+  assert.equal(subs.length, 2);
+  assert.equal(subs[0].submission_id, subs[1].submission_id);
+  await ctx.close();
+});
+
+test("an old server's already_signed_in_today never claims the visit was recorded", async () => {
+  const { page, ctx } = await open(CURRENT, { server: (b) => b.action === "search"
+    ? { status: 200, json: { results: serverSearch(b.query) } }
+    : { status: 200, json: { status: "already_signed_in_today", visitor_status: "returning", visit_date_local: "2026-09-30" } } });
+  const r = await signIn(page, "Gina Williams");
+  assert.equal(r.detail, "You already signed in earlier today, so this sign-in was not added again.");
+  assert.doesNotMatch(r.detail, /has been recorded/);
+  await ctx.close();
+});
